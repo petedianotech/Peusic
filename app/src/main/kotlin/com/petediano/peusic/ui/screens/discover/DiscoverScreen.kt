@@ -32,7 +32,7 @@ fun DiscoverScreen(onOpenNowPlaying: () -> Unit = {}) {
                 shape = CardShape,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
-                Column(Modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(16.dp)) {
                     Text("Offline-first music", style = MaterialTheme.typography.titleMedium)
                     Text(
                         "Browse your local library in Music, or add authorised direct audio URLs in Downloads.",
