@@ -32,12 +32,12 @@ jobs:
       - name: Accept licenses and install packages
         run: |
           yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+          sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
 
       - name: Bootstrap Gradle wrapper
         run: |
           if [ ! -f ./gradlew ]; then
-            gradle wrapper --gradle-version 8.11.1
+            gradle wrapper --gradle-version 8.9
           fi
           chmod +x ./gradlew
 
