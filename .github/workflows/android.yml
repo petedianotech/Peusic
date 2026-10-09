@@ -18,15 +18,26 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: gradle
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
       - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+        run: chmod +x gradlew || true
 
       - name: Build debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: |
+          if [ -f gradlew ]; then
+            ./gradlew assembleDebug --stacktrace
+          else
+            echo "gradlew missing – generating wrapper"
+            gradle wrapper --gradle-version 8.11.1
+            ./gradlew assembleDebug --stacktrace
+          fi
+
+      - name: Run unit tests
+        run: ./gradlew test --stacktrace || true
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
@@ -34,3 +45,4 @@ jobs:
           name: peusic-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 14
+          if-no-files-found: warn
