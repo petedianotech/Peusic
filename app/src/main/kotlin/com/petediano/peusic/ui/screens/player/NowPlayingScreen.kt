@@ -14,16 +14,13 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Repeat
-import androidx.compose.material.icons.filled.RepeatOne
-import androidx.compose.material.icons.filled.Shuffle
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -51,10 +48,14 @@ fun NowPlayingScreen(
 
     val progress = if (duration > 0) position.toFloat() / duration else 0f
 
+    val repeatLabel = when (repeatMode) {
+        Player.REPEAT_MODE_ONE -> "Repeat one"
+        Player.REPEAT_MODE_ALL -> "Repeat all"
+        else -> "Repeat off"
+    }
+
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
+        modifier = Modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
@@ -105,9 +106,7 @@ fun NowPlayingScreen(
         Slider(
             value = progress.coerceIn(0f, 1f),
             onValueChange = { fraction ->
-                if (duration > 0) {
-                    playerViewModel.seekTo((fraction * duration).toLong())
-                }
+                if (duration > 0) playerViewModel.seekTo((fraction * duration).toLong())
             },
             modifier = Modifier.fillMaxWidth()
         )
@@ -115,16 +114,8 @@ fun NowPlayingScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                PlayerViewModel.formatTime(position),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                PlayerViewModel.formatTime(duration),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Text(PlayerViewModel.formatTime(position), style = MaterialTheme.typography.labelMedium)
+            Text(PlayerViewModel.formatTime(duration), style = MaterialTheme.typography.labelMedium)
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -134,21 +125,8 @@ fun NowPlayingScreen(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { playerViewModel.toggleShuffle() }) {
-                Icon(
-                    Icons.Filled.Shuffle,
-                    contentDescription = "Shuffle",
-                    tint = if (shuffle) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            IconButton(onClick = { playerViewModel.previous() }) {
-                Icon(Icons.Filled.SkipPrevious, contentDescription = "Previous", modifier = Modifier.size(36.dp))
-            }
-            IconButton(
-                onClick = { playerViewModel.playPause() },
-                modifier = Modifier.size(64.dp)
-            ) {
+            TextButton(onClick = { playerViewModel.previous() }) { Text("Prev") }
+            IconButton(onClick = { playerViewModel.playPause() }, modifier = Modifier.size(64.dp)) {
                 Icon(
                     if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                     contentDescription = if (isPlaying) "Pause" else "Play",
@@ -156,16 +134,20 @@ fun NowPlayingScreen(
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
-            IconButton(onClick = { playerViewModel.next() }) {
-                Icon(Icons.Filled.SkipNext, contentDescription = "Next", modifier = Modifier.size(36.dp))
+            TextButton(onClick = { playerViewModel.next() }) { Text("Next") }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            TextButton(onClick = { playerViewModel.toggleShuffle() }) {
+                Text(if (shuffle) "Shuffle on" else "Shuffle off")
             }
-            IconButton(onClick = { playerViewModel.cycleRepeat() }) {
-                val (icon, tint) = when (repeatMode) {
-                    Player.REPEAT_MODE_ONE -> Icons.Filled.RepeatOne to MaterialTheme.colorScheme.primary
-                    Player.REPEAT_MODE_ALL -> Icons.Filled.Repeat to MaterialTheme.colorScheme.primary
-                    else -> Icons.Filled.Repeat to MaterialTheme.colorScheme.onSurfaceVariant
-                }
-                Icon(icon, contentDescription = "Repeat", tint = tint)
+            TextButton(onClick = { playerViewModel.cycleRepeat() }) {
+                Text(repeatLabel)
             }
         }
     }

@@ -1,7 +1,6 @@
 package com.petediano.peusic.ui.screens.player
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -75,16 +73,10 @@ fun MiniPlayer(
                 Icon(
                     Icons.Filled.MusicNote,
                     contentDescription = null,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CardShape),
+                    modifier = Modifier.size(40.dp).clip(CardShape),
                     tint = MaterialTheme.colorScheme.primary
                 )
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 12.dp)
-                ) {
+                Column(modifier = Modifier.weight(1f).padding(horizontal = 12.dp)) {
                     Text(
                         text = title ?: "Unknown",
                         style = MaterialTheme.typography.titleSmall,
@@ -104,9 +96,6 @@ fun MiniPlayer(
                         if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                         contentDescription = if (isPlaying) "Pause" else "Play"
                     )
-                }
-                IconButton(onClick = { playerViewModel.next() }) {
-                    Icon(Icons.Filled.SkipNext, contentDescription = "Next")
                 }
             }
         }

@@ -13,16 +13,10 @@ import com.petediano.peusic.domain.model.Track
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.concurrent.Executors
 
-/**
- * App-side controller for Media3 MediaSessionService.
- * Exposes play state for Compose UI (mini-player + now playing).
- */
 class PlaybackController(private val context: Context) {
 
     private var controller: MediaController? = null
-    private var controllerFuture: com.google.common.util.concurrent.ListenableFuture<MediaController>? = null
 
     private val _isConnected = MutableStateFlow(false)
     val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
@@ -55,9 +49,7 @@ class PlaybackController(private val context: Context) {
     private val positionTicker = object : Runnable {
         override fun run() {
             updatePosition()
-            if (_isPlaying.value) {
-                mainHandler.postDelayed(this, 500)
-            }
+            if (_isPlaying.value) mainHandler.postDelayed(this, 500)
         }
     }
 
@@ -93,12 +85,8 @@ class PlaybackController(private val context: Context) {
 
     fun connect() {
         if (controller != null) return
-        val token = SessionToken(
-            context,
-            ComponentName(context, PlaybackService::class.java)
-        )
+        val token = SessionToken(context, ComponentName(context, PlaybackService::class.java))
         val future = MediaController.Builder(context, token).buildAsync()
-        controllerFuture = future
         future.addListener({
             try {
                 val c = future.get()
@@ -121,9 +109,8 @@ class PlaybackController(private val context: Context) {
     fun disconnect() {
         mainHandler.removeCallbacks(positionTicker)
         controller?.removeListener(listener)
-        controllerFuture?.let { MediaController.releaseFuture(it) }
+        controller?.release()
         controller = null
-        controllerFuture = null
         _isConnected.value = false
         _hasMedia.value = false
     }
@@ -175,10 +162,6 @@ class PlaybackController(private val context: Context) {
             Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
             else -> Player.REPEAT_MODE_OFF
         }
-    }
-
-    fun setPlaybackSpeed(speed: Float) {
-        controller?.setPlaybackSpeed(speed)
     }
 
     fun updatePosition() {
