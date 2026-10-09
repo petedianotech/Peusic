@@ -6,28 +6,22 @@ plugins {
 
 android {
     namespace = "com.petediano.peusic"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.petediano.peusic"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 4
         versionName = "1.0.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
+        vectorDrawables { useSupportLibrary = true }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         debug {
             isMinifyEnabled = false
@@ -40,20 +34,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
-    buildFeatures {
-        compose = true
-    }
-
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
+    kotlinOptions { jvmTarget = "17" }
+    buildFeatures { compose = true }
+    packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
 }
 
 dependencies {
@@ -70,15 +53,12 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.datastore.preferences)
-
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.session)
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.common)
-
     implementation(libs.okhttp)
     implementation(libs.androidx.work.runtime.ktx)
-
     testImplementation(libs.junit)
     debugImplementation(libs.androidx.ui.tooling)
 }
