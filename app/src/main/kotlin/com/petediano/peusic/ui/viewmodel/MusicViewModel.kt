@@ -3,12 +3,13 @@ package com.petediano.peusic.ui.viewmodel
 import android.app.Application
 import android.content.ComponentName
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
-import com.google.common.util.concurrent.MoreExecutors
 import com.petediano.peusic.data.library.MediaStoreLibraryRepository
 import com.petediano.peusic.domain.model.Track
 import com.petediano.peusic.service.PlaybackService
@@ -26,16 +27,17 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     private var controller: MediaController? = null
 
-    init {
-        connectController()
-    }
+    init { connectController() }
 
     private fun connectController() {
-        val token = SessionToken(getApplication(), ComponentName(getApplication(), PlaybackService::class.java))
+        val token = SessionToken(
+            getApplication(),
+            ComponentName(getApplication(), PlaybackService::class.java)
+        )
         val future = MediaController.Builder(getApplication(), token).buildAsync()
         future.addListener({
-            controller = future.get()
-        }, MoreExecutors.directExecutor())
+            try { controller = future.get() } catch (_: Exception) { }
+        }, { runnable -> Handler(Looper.getMainLooper()).post(runnable) })
     }
 
     fun loadLibrary() {
@@ -55,10 +57,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         c.setMediaItem(MediaItem.fromUri(track.contentUri))
         c.prepare()
         c.play()
-        // Ensure service is running
-        getApplication<Application>().startForegroundService(
-            Intent(getApplication(), PlaybackService::class.java)
-        )
+        try {
+            getApplication<Application>().startForegroundService(
+                Intent(getApplication(), PlaybackService::class.java)
+            )
+        } catch (_: Exception) { }
     }
 
     fun setMessage(msg: String) { _message.value = msg }

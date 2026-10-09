@@ -3,11 +3,6 @@ package com.petediano.peusic.data.download
 import java.net.URI
 import java.util.Locale
 
-/**
- * Strict validation for downloadable audio URLs.
- * Only HTTPS (preferred) or HTTP direct links that look like audio are accepted.
- * No YouTube, no streaming platforms that forbid bulk download, no local/file schemes.
- */
 object UrlValidator {
 
     private val BLOCKED_HOSTS = setOf(
@@ -22,9 +17,7 @@ object UrlValidator {
         "mp3", "m4a", "aac", "ogg", "oga", "opus", "flac", "wav", "wma", "aiff", "ape", "alac"
     )
 
-    private val AUDIO_MIME_HINTS = listOf(
-        "audio/", "application/ogg", "application/x-flac"
-    )
+    private val AUDIO_MIME_HINTS = listOf("audio/", "application/ogg", "application/x-flac")
 
     data class ValidationResult(
         val isValid: Boolean,
@@ -35,13 +28,9 @@ object UrlValidator {
 
     fun validate(rawUrl: String): ValidationResult {
         val trimmed = rawUrl.trim()
-        if (trimmed.isBlank()) {
-            return ValidationResult(false, "URL is empty")
-        }
+        if (trimmed.isBlank()) return ValidationResult(false, "URL is empty")
 
-        val uri = try {
-            URI(trimmed)
-        } catch (e: Exception) {
+        val uri = try { URI(trimmed) } catch (_: Exception) {
             return ValidationResult(false, "Invalid URL syntax")
         }
 
@@ -80,15 +69,13 @@ object UrlValidator {
     fun sanitizeFileName(name: String): String {
         var clean = name
             .replace(Regex("""[\\/:*?\"<>|]"""), "_")
-            .replace(Regex("""\s+"""), " ")
+            .replace(Regex("\\s+"), " ")
             .trim()
             .take(180)
         if (clean.isBlank() || clean == "." || clean == "..") {
             clean = "audio_${System.currentTimeMillis()}"
         }
-        if (!clean.contains('.')) {
-            clean += ".mp3"
-        }
+        if (!clean.contains('.')) clean += ".mp3"
         return clean
     }
 
@@ -96,6 +83,6 @@ object UrlValidator {
         if (contentType.isNullOrBlank()) return false
         val lower = contentType.lowercase(Locale.US)
         return AUDIO_MIME_HINTS.any { lower.startsWith(it) } ||
-                lower.contains("mpeg") || lower.contains("mp4") || lower.contains("ogg")
+            lower.contains("mpeg") || lower.contains("mp4") || lower.contains("ogg")
     }
 }
