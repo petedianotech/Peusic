@@ -43,6 +43,8 @@ fun NowPlayingScreen(
     val duration by playerViewModel.durationMs.collectAsState()
     val shuffle by playerViewModel.shuffle.collectAsState()
     val repeatMode by playerViewModel.repeatMode.collectAsState()
+    val queueSize by playerViewModel.queueSize.collectAsState()
+    val currentIndex by playerViewModel.currentIndex.collectAsState()
 
     val progress = if (duration > 0) position.toFloat() / duration else 0f
     val repeatLabel = when (repeatMode) {
@@ -57,14 +59,45 @@ fun NowPlayingScreen(
     ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.Filled.Close, contentDescription = "Close") }
-            Text("Now Playing", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+            Text(
+                "Now Playing",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
+            )
             Spacer(modifier = Modifier.size(48.dp))
         }
         Spacer(modifier = Modifier.height(32.dp))
-        Icon(Icons.Filled.PlayArrow, contentDescription = null, modifier = Modifier.size(120.dp), tint = MaterialTheme.colorScheme.primary)
+        Icon(
+            Icons.Filled.PlayArrow,
+            contentDescription = null,
+            modifier = Modifier.size(120.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
         Spacer(modifier = Modifier.height(24.dp))
-        Text(title ?: "No track", style = MaterialTheme.typography.headlineSmall, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
-        Text(artist ?: "", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 8.dp))
+        Text(
+            title ?: "No track",
+            style = MaterialTheme.typography.headlineSmall,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center
+        )
+        Text(
+            artist ?: "",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        if (queueSize > 0) {
+            Text(
+                "Track ${currentIndex + 1} of $queueSize",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
         Spacer(modifier = Modifier.height(32.dp))
         Slider(
             value = progress.coerceIn(0f, 1f),
@@ -76,7 +109,11 @@ fun NowPlayingScreen(
             Text(PlayerViewModel.formatTime(duration), style = MaterialTheme.typography.labelMedium)
         }
         Spacer(modifier = Modifier.height(24.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             TextButton(onClick = { playerViewModel.previous() }) { Text("Prev") }
             Button(onClick = { playerViewModel.playPause() }) {
                 Text(if (isPlaying) "Pause" else "Play")
@@ -85,7 +122,9 @@ fun NowPlayingScreen(
         }
         Spacer(modifier = Modifier.height(16.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            TextButton(onClick = { playerViewModel.toggleShuffle() }) { Text(if (shuffle) "Shuffle on" else "Shuffle off") }
+            TextButton(onClick = { playerViewModel.toggleShuffle() }) {
+                Text(if (shuffle) "Shuffle on" else "Shuffle off")
+            }
             TextButton(onClick = { playerViewModel.cycleRepeat() }) { Text(repeatLabel) }
         }
     }
