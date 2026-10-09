@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
@@ -22,11 +21,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.petediano.peusic.ui.theme.CardShape
 import com.petediano.peusic.ui.theme.MiniPlayerShape
 import com.petediano.peusic.ui.viewmodel.PlayerViewModel
 
@@ -48,10 +45,7 @@ fun MiniPlayer(
     val progress = if (duration > 0) (position.toFloat() / duration).coerceIn(0f, 1f) else 0f
 
     Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(72.dp)
-            .clickable(onClick = onOpenNowPlaying),
+        modifier = modifier.fillMaxWidth().height(72.dp).clickable(onClick = onOpenNowPlaying),
         shape = MiniPlayerShape,
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 4.dp,
@@ -65,37 +59,21 @@ fun MiniPlayer(
                 trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    Icons.Filled.MusicNote,
+                    Icons.Filled.PlayArrow,
                     contentDescription = null,
-                    modifier = Modifier.size(40.dp).clip(CardShape),
+                    modifier = Modifier.size(40.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Column(modifier = Modifier.weight(1f).padding(horizontal = 12.dp)) {
-                    Text(
-                        text = title ?: "Unknown",
-                        style = MaterialTheme.typography.titleSmall,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = artist ?: "",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Text(title ?: "Unknown", style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(artist ?: "", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 IconButton(onClick = { playerViewModel.playPause() }) {
-                    Icon(
-                        if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                        contentDescription = if (isPlaying) "Pause" else "Play"
-                    )
+                    Icon(if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow, contentDescription = if (isPlaying) "Pause" else "Play")
                 }
             }
         }

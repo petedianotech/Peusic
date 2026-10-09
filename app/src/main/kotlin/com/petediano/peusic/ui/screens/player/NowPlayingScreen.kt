@@ -11,10 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,7 +45,6 @@ fun NowPlayingScreen(
     val repeatMode by playerViewModel.repeatMode.collectAsState()
 
     val progress = if (duration > 0) position.toFloat() / duration else 0f
-
     val repeatLabel = when (repeatMode) {
         Player.REPEAT_MODE_ONE -> "Repeat one"
         Player.REPEAT_MODE_ALL -> "Repeat all"
@@ -58,97 +55,38 @@ fun NowPlayingScreen(
         modifier = Modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.Filled.Close, contentDescription = "Close")
-            }
-            Text(
-                "Now Playing",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center
-            )
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBack) { Icon(Icons.Filled.Close, contentDescription = "Close") }
+            Text("Now Playing", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.size(48.dp))
         }
-
         Spacer(modifier = Modifier.height(32.dp))
-
-        Icon(
-            Icons.Filled.MusicNote,
-            contentDescription = null,
-            modifier = Modifier.size(160.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-
+        Icon(Icons.Filled.PlayArrow, contentDescription = null, modifier = Modifier.size(120.dp), tint = MaterialTheme.colorScheme.primary)
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(title ?: "No track", style = MaterialTheme.typography.headlineSmall, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
+        Text(artist ?: "", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 8.dp))
         Spacer(modifier = Modifier.height(32.dp))
-
-        Text(
-            text = title ?: "No track",
-            style = MaterialTheme.typography.headlineSmall,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center
-        )
-        Text(
-            text = artist ?: "",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = 8.dp)
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
         Slider(
             value = progress.coerceIn(0f, 1f),
-            onValueChange = { fraction ->
-                if (duration > 0) playerViewModel.seekTo((fraction * duration).toLong())
-            },
+            onValueChange = { f -> if (duration > 0) playerViewModel.seekTo((f * duration).toLong()) },
             modifier = Modifier.fillMaxWidth()
         )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(PlayerViewModel.formatTime(position), style = MaterialTheme.typography.labelMedium)
             Text(PlayerViewModel.formatTime(duration), style = MaterialTheme.typography.labelMedium)
         }
-
         Spacer(modifier = Modifier.height(24.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
             TextButton(onClick = { playerViewModel.previous() }) { Text("Prev") }
             IconButton(onClick = { playerViewModel.playPause() }, modifier = Modifier.size(64.dp)) {
-                Icon(
-                    if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                    contentDescription = if (isPlaying) "Pause" else "Play",
-                    modifier = Modifier.size(48.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                Icon(if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
             }
             TextButton(onClick = { playerViewModel.next() }) { Text("Next") }
         }
-
         Spacer(modifier = Modifier.height(16.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            TextButton(onClick = { playerViewModel.toggleShuffle() }) {
-                Text(if (shuffle) "Shuffle on" else "Shuffle off")
-            }
-            TextButton(onClick = { playerViewModel.cycleRepeat() }) {
-                Text(repeatLabel)
-            }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            TextButton(onClick = { playerViewModel.toggleShuffle() }) { Text(if (shuffle) "Shuffle on" else "Shuffle off") }
+            TextButton(onClick = { playerViewModel.cycleRepeat() }) { Text(repeatLabel) }
         }
     }
 }
