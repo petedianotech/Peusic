@@ -9,9 +9,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       ANDROID_HOME: ${{ github.workspace }}/android-sdk
       ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,43 +23,73 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: 'gradle'
 
       - name: Install Android command-line tools
         run: |
           mkdir -p "$ANDROID_HOME/cmdline-tools"
-          curl -sL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/cmdtools.zip
+          curl -fsSL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/cmdtools.zip
           unzip -q /tmp/cmdtools.zip -d "$ANDROID_HOME/cmdline-tools"
           mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
           echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+          echo "$ANDROID_HOME/build-tools/35.0.0" >> $GITHUB_PATH
 
       - name: Accept licenses and install SDK packages
         run: |
-          yes | sdkmanager --sdk_root="$ANDROID_HOME" --licenses >/dev/null || true
-          sdkmanager --sdk_root="$ANDROID_HOME" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+          yes | sdkmanager --sdk_root="$ANDROID_HOME" --licenses >/dev/null 2>&1 || true
+          sdkmanager --sdk_root="$ANDROID_HOME" \
+            "platforms;android-35" \
+            "build-tools;35.0.0" \
+            "platform-tools"
           test -f "$ANDROID_HOME/platforms/android-35/android.jar"
-          test -f "$ANDROID_HOME/platforms/android-35/core-for-system-modules.jar"
+          test -f "$ANDROID_HOME/platforms/android-35/core-for-system-modules.jar" || \
+            echo "core-for-system-modules.jar missing (non-fatal on some images)"
 
       - name: Write local.properties
-        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
-
-      - name: Bootstrap Gradle wrapper
         run: |
-          if [ ! -f ./gradlew ]; then
-            gradle wrapper --gradle-version 8.9
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          cat local.properties
+
+      - name: Ensure Gradle wrapper
+        run: |
+          if [ ! -f ./gradlew ] || [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+            echo "Gradle wrapper missing – bootstrapping"
+            mkdir -p gradle/wrapper
+            curl -fsSL -o gradle/wrapper/gradle-wrapper.jar \
+              https://raw.githubusercontent.com/gradle/gradle/v8.11.1/gradle/wrapper/gradle-wrapper.jar
+            cat > gradle/wrapper/gradle-wrapper.properties << 'PROPS'
+          distributionBase=GRADLE_USER_HOME
+          distributionPath=wrapper/dists
+          distributionUrl=https\://services.gradle.org/distributions/gradle-8.11.1-bin.zip
+          networkTimeout=10000
+          validateDistributionUrl=true
+          zipStoreBase=GRADLE_USER_HOME
+          zipStorePath=wrapper/dists
+          PROPS
+            curl -fsSL -o gradlew \
+              https://raw.githubusercontent.com/gradle/gradle/v8.11.1/gradlew
+            curl -fsSL -o gradlew.bat \
+              https://raw.githubusercontent.com/gradle/gradle/v8.11.1/gradlew.bat
           fi
           chmod +x ./gradlew
+          ls -la gradlew gradle/wrapper/ || true
 
       - name: Build debug APK
         run: |
           export ANDROID_HOME="$ANDROID_HOME"
           export ANDROID_SDK_ROOT="$ANDROID_HOME"
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: List APK outputs
+        if: always()
         run: |
-          find app/build/outputs -type f -name "*.apk" -ls || true
-          ls -la app/build/outputs/apk/debug/ || true
+          echo "=== APK search ==="
+          find app/build/outputs -type f -name "*.apk" -ls 2>/dev/null || true
+          echo "=== debug dir ==="
+          ls -la app/build/outputs/apk/debug/ 2>/dev/null || true
+          echo "=== all outputs ==="
+          find app/build/outputs -type f 2>/dev/null | head -50 || true
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
@@ -71,4 +103,4 @@ jobs:
 
       - name: Run unit tests
         continue-on-error: true
-        run: ./gradlew test --stacktrace
+        run: ./gradlew test --stacktrace --no-daemon

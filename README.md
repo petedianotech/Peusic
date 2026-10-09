@@ -1,29 +1,38 @@
 # Peusic
 
-**Peusic** — offline-first personal music player for Android.
+**Peusic** — production-ready offline-first personal music player for Android.
 
 Sonic Aurora visual identity · No ads · No tracking · No accounts · No cloud sync.
 
-## Features (v1.1.0)
+## Features (v1.1.1)
 
 | Area | Status |
 |------|--------|
 | Sonic Aurora theme (System / Light / Dark blue) | ✅ |
-| Navigation (Discover, Downloads, Music, Settings) | ✅ |
-| Splash + Now Playing | ✅ |
-| Mini-player bar (play/pause/next + progress) | ✅ |
-| Authorised direct-URL downloader (OkHttp + WorkManager + Room) | ✅ |
-| Strict URL validation (blocks YouTube/Spotify/etc.) | ✅ |
-| Local library via MediaStore | ✅ |
-| Background playback (Media3 MediaSessionService) | ✅ |
-| Queue play from library, seek, shuffle, repeat | ✅ |
-| DataStore preferences | ✅ |
+| Navigation (Discover, Downloads, Music, Settings) + Splash | ✅ |
+| Mini-player + full Now Playing (seek, prev/next, shuffle, repeat) | ✅ |
+| Authorised direct-URL audio downloader (OkHttp + WorkManager + Room) | ✅ |
+| Strict URL validation (blocks YouTube / Spotify / DRM hosts) | ✅ |
+| Local library via MediaStore (scoped storage) | ✅ |
+| Background playback (Media3 ExoPlayer + MediaSessionService) | ✅ |
+| System media controls, notification, lock-screen, Bluetooth | ✅ |
+| Queue play from library | ✅ |
+| DataStore preferences (theme, gapless, resume, skip-silence) | ✅ |
 | Unit tests (URL validator) | ✅ |
-| Debug APK via GitHub Actions | ✅ |
+| Debug APK artifact via GitHub Actions | ✅ |
+
+## Architecture
+
+- **UI**: Jetpack Compose + Material 3 + Navigation
+- **Playback**: Media3 1.5.1 (ExoPlayer + MediaSessionService)
+- **Library**: MediaStore queries (READ_MEDIA_AUDIO)
+- **Downloads**: OkHttp + WorkManager + Room
+- **Settings**: DataStore Preferences
+- **Packages**: `ui/`, `domain/`, `data/`, `service/`
 
 ## Requirements
 
-- minSdk 26 · target/compile SDK 35 · JDK 17+
+- minSdk 26 · target / compile SDK 35 · JDK 17+
 
 ## Build
 
@@ -32,17 +41,27 @@ Sonic Aurora visual identity · No ads · No tracking · No accounts · No cloud
 ./gradlew test
 ```
 
-Debug APK: `app/build/outputs/apk/debug/`
+Debug APK lands in `app/build/outputs/apk/debug/`.
 
-GitHub Actions uploads the APK artifact on every successful push to `main`.
+GitHub Actions builds on every push to `main` and uploads the **peusic-debug-apk** artifact (retention 30 days).
 
 ## Privacy
 
-No advertising or analytics SDKs. Network is used only for user-initiated authorised downloads. Library and playback stay on device.
+Peusic ships with zero advertising or analytics SDKs.  
+Network access is used exclusively for user-initiated authorised downloads.  
+Library scanning and playback are 100 % on-device.
 
 ## Legal downloads
 
-Only direct HTTPS/HTTP audio file URLs you are authorised to download. No YouTube, Spotify, SoundCloud, or DRM circumvention.
+Only paste direct HTTPS/HTTP links to audio files you are authorised to download.  
+YouTube, Spotify, SoundCloud, Apple Music and any DRM-protected sources are rejected by the URL validator.
+
+## Known limitations (real-device testing recommended)
+
+- Artwork loading / bounded disk cache (placeholder used today)
+- Full queue reordering UI
+- Playback speed / sleep-timer polish
+- Large-library performance tuning on low-end devices
 
 ## Licence
 
