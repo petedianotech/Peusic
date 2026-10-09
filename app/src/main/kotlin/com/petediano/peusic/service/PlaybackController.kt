@@ -45,6 +45,12 @@ class PlaybackController(private val context: Context) {
     private val _hasMedia = MutableStateFlow(false)
     val hasMedia: StateFlow<Boolean> = _hasMedia.asStateFlow()
 
+    private val _queueSize = MutableStateFlow(0)
+    val queueSize: StateFlow<Int> = _queueSize.asStateFlow()
+
+    private val _currentIndex = MutableStateFlow(0)
+    val currentIndex: StateFlow<Int> = _currentIndex.asStateFlow()
+
     private val mainHandler = Handler(Looper.getMainLooper())
     private val positionTicker = object : Runnable {
         override fun run() {
@@ -65,13 +71,19 @@ class PlaybackController(private val context: Context) {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             _currentTitle.value = mediaItem?.mediaMetadata?.title?.toString()
             _currentArtist.value = mediaItem?.mediaMetadata?.artist?.toString()
-            _hasMedia.value = (controller?.mediaItemCount ?: 0) > 0
+            val c = controller
+            _hasMedia.value = (c?.mediaItemCount ?: 0) > 0
+            _queueSize.value = c?.mediaItemCount ?: 0
+            _currentIndex.value = c?.currentMediaItemIndex?.coerceAtLeast(0) ?: 0
             updatePosition()
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             updatePosition()
-            _hasMedia.value = (controller?.mediaItemCount ?: 0) > 0
+            val c = controller
+            _hasMedia.value = (c?.mediaItemCount ?: 0) > 0
+            _queueSize.value = c?.mediaItemCount ?: 0
+            _currentIndex.value = c?.currentMediaItemIndex?.coerceAtLeast(0) ?: 0
         }
 
         override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
@@ -99,6 +111,8 @@ class PlaybackController(private val context: Context) {
                 _shuffle.value = c.shuffleModeEnabled
                 _repeatMode.value = c.repeatMode
                 _hasMedia.value = c.mediaItemCount > 0
+                _queueSize.value = c.mediaItemCount
+                _currentIndex.value = c.currentMediaItemIndex.coerceAtLeast(0)
                 updatePosition()
             } catch (_: Exception) {
                 _isConnected.value = false
@@ -135,6 +149,8 @@ class PlaybackController(private val context: Context) {
         c.prepare()
         c.play()
         _hasMedia.value = true
+        _queueSize.value = items.size
+        _currentIndex.value = startIndex.coerceIn(0, items.lastIndex)
     }
 
     fun playPause() {
