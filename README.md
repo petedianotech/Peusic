@@ -2,79 +2,58 @@
 
 **Peusic** is a premium, offline-first personal music player for Android.
 
-It combines broad local-audio compatibility, polished playback controls and efficient offline music management under a distinctive visual identity called **Sonic Aurora**.
+Sonic Aurora visual identity • No ads • No tracking • No accounts • No cloud sync.
 
-- No advertisements  
-- No analytics or tracking  
-- No user accounts or login  
-- No cloud synchronisation  
-- No social features  
+## Architecture
 
-Music is managed locally wherever possible.
+- Kotlin + Jetpack Compose + Material 3
+- Media3 ExoPlayer + MediaSessionService for playback
+- MediaStore for local library
+- OkHttp + WorkManager + Room for authorised downloads
+- Clean packages: `ui/`, `domain/`, `data/`, `service/`
 
-## Visual identity — Sonic Aurora
+## Minimum SDK
 
-Atmospheric blue → icy-blue → periwinkle → muted teal → subtle mint gradients.  
-Deep navy surfaces in dark mode (never pure black). Clean icy-white / pale-blue surfaces in light mode.  
-Gradients are used selectively on hero surfaces, primary actions and progress indicators.
+**minSdk = 26**. Target/compile SDK 35.
 
-## Architecture (Phase 1)
+## Phase 3 — Local library & playback
 
-- Single Android application module  
-- Kotlin + Jetpack Compose + Material 3  
-- Clean package boundaries:  
-  `ui/` (theme, components, screens, navigation)  
-  `domain/` (future models)  
-  `data/` (future repositories)  
-  `service/` (future playback / download)  
+### Implemented
+- Real MediaStore scanning (Songs / Albums / Artists / Folders)
+- Runtime permission for READ_MEDIA_AUDIO / READ_EXTERNAL_STORAGE
+- PlaybackService (MediaSessionService + ExoPlayer)
+- MediaController-based PlaybackController
+- Play all / play from track
+- System media controls & notification via MediaSession
+- Audio focus + becoming-noisy handling
 
-Presentation is fully separated from future playback, download and storage logic.
+### Playback engine decision
+**Media3 ExoPlayer only.** Common local formats are covered. LibVLC was evaluated and not added; no measured gaps justified the size/licensing cost. Architecture remains open for a future evidence-based fallback.
 
-## Minimum SDK decision
+### Still needs real-device work
+- Full shuffle/repeat/speed/sleep-timer UI
+- Artwork caching
+- Queue reordering UI
+- Exact codec matrix
 
-**minSdk = 26 (Android 8.0)**
-
-Rationale:
-- Media3 / ExoPlayer audio playback is supported from API 23; API 26 gives reliable MediaSession, notification and background behaviour on the large majority of active devices.
-- Scoped storage and modern permission model are well established.
-- Avoids older platform media quirks while still covering the vast majority of the intended user base.
-- Target / compile SDK 35 (Android 15) for current Play requirements and modern APIs.
-
-## Current feature status (Phase 1)
+## Feature status
 
 | Area | Status |
 |------|--------|
-| Project scaffold & Gradle | ✅ Complete |
-| Sonic Aurora design system | ✅ Complete |
-| Light / dark-blue themes | ✅ Complete |
-| Bottom navigation (Discover, Downloads, Music, Settings) | ✅ Complete |
-| Splash screen | ✅ Complete |
-| Discover, Downloads, Music, Settings screens (UI) | ✅ Complete |
-| Now Playing full screen + Mini-player shell | ✅ Complete (placeholders) |
-| Real local library scan | ❌ Phase 3 |
-| Real playback engine (Media3) | ❌ Phase 3 |
-| Authorised downloader | ❌ Phase 2 |
-| Settings persistence | ❌ Phase 4 |
+| Design system & navigation | ✅ |
+| Authorised direct URL downloader | ✅ |
+| Local library (MediaStore) | ✅ |
+| Background playback (Media3) | ✅ |
+| System media controls | ✅ |
+| Full player polish | Partial |
+| Settings persistence | Phase 4 |
 
-## Build instructions
-
-### Prerequisites
-- JDK 17+
-- Android SDK with platform 35 and build-tools
-- Android Studio recommended
+## Build
 
 ```bash
 ./gradlew assembleDebug
+./gradlew test
 ```
 
-Debug APK will be produced at  
-`app/build/outputs/apk/debug/app-debug.apk`
-
-### GitHub Actions
-A workflow builds the debug APK on every push and pull request and uploads it as an artifact.
-
-## Licence
-This project is currently private. Open-source licence will be added when the repository is made public.
-
 ## Privacy
-Peusic does not contain advertising SDKs, analytics SDKs or any tracking. Network access is used only for authorised downloads (Phase 2) and optional official metadata queries.
+No ads or analytics. Network only for user-initiated authorised downloads. Library and playback stay on device.
