@@ -26,6 +26,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     val repeatMode: StateFlow<Int> = controller.repeatMode
     val hasMedia: StateFlow<Boolean> = controller.hasMedia
     val isConnected: StateFlow<Boolean> = controller.isConnected
+    val queueSize: StateFlow<Int> = controller.queueSize
+    val currentIndex: StateFlow<Int> = controller.currentIndex
 
     init {
         controller.connect()
