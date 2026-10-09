@@ -35,15 +35,11 @@ jobs:
         run: |
           yes | sdkmanager --sdk_root="$ANDROID_HOME" --licenses >/dev/null || true
           sdkmanager --sdk_root="$ANDROID_HOME" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
-          # Verify critical platform files exist
-          ls -la "$ANDROID_HOME/platforms/android-35/"
           test -f "$ANDROID_HOME/platforms/android-35/android.jar"
           test -f "$ANDROID_HOME/platforms/android-35/core-for-system-modules.jar"
 
       - name: Write local.properties
-        run: |
-          echo "sdk.dir=$ANDROID_HOME" > local.properties
-          cat local.properties
+        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
       - name: Bootstrap Gradle wrapper
         run: |
@@ -56,12 +52,22 @@ jobs:
         run: |
           export ANDROID_HOME="$ANDROID_HOME"
           export ANDROID_SDK_ROOT="$ANDROID_HOME"
-          ./gradlew assembleDebug --stacktrace --info 2>&1 | tail -100
+          ./gradlew assembleDebug --stacktrace
+
+      - name: List APK outputs
+        run: |
+          find app/build/outputs -type f -name "*.apk" -ls || true
+          ls -la app/build/outputs/apk/debug/ || true
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
-        if: success()
         with:
           name: peusic-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
-          retention-days: 14
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/**/*.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Run unit tests
+        run: ./gradlew test --stacktrace
