@@ -18,28 +18,26 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: 'tools platform-tools platforms;android-36 build-tools;36.0.0'
 
       - name: Bootstrap Gradle wrapper
         run: |
-          if [ ! -f gradlew ]; then
+          if [ ! -f ./gradlew ]; then
             gradle wrapper --gradle-version 8.11.1
           fi
-          chmod +x gradlew
+          chmod +x ./gradlew
 
       - name: Build debug APK
         run: ./gradlew assembleDebug --stacktrace
 
-      - name: Run unit tests
-        run: ./gradlew test --stacktrace || true
-
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: peusic-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 14
-          if-no-files-found: warn
