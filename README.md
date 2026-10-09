@@ -1,45 +1,29 @@
 # Peusic
 
-**Peusic** — premium offline-first personal music player for Android.
+**Peusic** — offline-first personal music player for Android.
 
-Sonic Aurora visual identity • No ads • No tracking • No accounts • No cloud sync.
+Sonic Aurora visual identity · No ads · No tracking · No accounts · No cloud sync.
 
-## Architecture
-
-- Kotlin + Jetpack Compose + Material 3
-- Media3 ExoPlayer + MediaSessionService
-- MediaStore local library
-- OkHttp + WorkManager + Room for authorised downloads
-- DataStore for user preferences
-- Packages: `ui/`, `domain/`, `data/`, `service/`
-
-## Requirements
-
-- **minSdk 26**
-- Target / compile SDK 35
-- JDK 17+
-
-## Features (v1.0.0)
+## Features (v1.1.0)
 
 | Area | Status |
 |------|--------|
-| Sonic Aurora design system | ✅ |
-| Navigation | ✅ |
-| Authorised direct-URL downloader | ✅ |
-| Local library (MediaStore) | ✅ |
-| Background playback + system controls | ✅ |
-| Theme preference (System / Light / Dark blue) | ✅ |
-| Playback preferences | ✅ |
-| Privacy statement & troubleshooting | ✅ |
-| Unit tests (URL validation) | ✅ |
+| Sonic Aurora theme (System / Light / Dark blue) | ✅ |
+| Navigation (Discover, Downloads, Music, Settings) | ✅ |
+| Splash + Now Playing | ✅ |
+| Mini-player bar (play/pause/next + progress) | ✅ |
+| Authorised direct-URL downloader (OkHttp + WorkManager + Room) | ✅ |
+| Strict URL validation (blocks YouTube/Spotify/etc.) | ✅ |
+| Local library via MediaStore | ✅ |
+| Background playback (Media3 MediaSessionService) | ✅ |
+| Queue play from library, seek, shuffle, repeat | ✅ |
+| DataStore preferences | ✅ |
+| Unit tests (URL validator) | ✅ |
 | Debug APK via GitHub Actions | ✅ |
 
-## Explicit non-goals
+## Requirements
 
-- No ads or analytics SDKs
-- No accounts or cloud sync
-- No YouTube / Spotify / DRM circumvention
-- LibVLC not shipped (Media3 only)
+- minSdk 26 · target/compile SDK 35 · JDK 17+
 
 ## Build
 
@@ -48,19 +32,18 @@ Sonic Aurora visual identity • No ads • No tracking • No accounts • No c
 ./gradlew test
 ```
 
-GitHub Actions builds on every push/PR and uploads the debug APK artifact.
+Debug APK: `app/build/outputs/apk/debug/`
+
+GitHub Actions uploads the APK artifact on every successful push to `main`.
 
 ## Privacy
 
-No advertising or analytics SDKs. Network used only for user-initiated authorised downloads. Library and playback stay on device.
+No advertising or analytics SDKs. Network is used only for user-initiated authorised downloads. Library and playback stay on device.
 
-## Known limitations
+## Legal downloads
 
-- Full player polish (shuffle/repeat/speed/sleep UI, artwork cache)
-- Queue reordering UI
-- Exact codec matrix on physical devices
-- Some UI source files may still need full remote sync
+Only direct HTTPS/HTTP audio file URLs you are authorised to download. No YouTube, Spotify, SoundCloud, or DRM circumvention.
 
 ## Licence
 
-Currently private. Dependency licences apply as usual.
+Currently private. Dependency licences (Media3, OkHttp, WorkManager, Room, Compose) apply as usual.

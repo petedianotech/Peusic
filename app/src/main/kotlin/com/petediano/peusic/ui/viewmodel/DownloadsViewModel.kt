@@ -24,15 +24,14 @@ class DownloadsViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun enqueue(rawUrl: String) {
         viewModelScope.launch {
-            val result = UrlValidator.validate(rawUrl)
-            if (!result.isValid) {
-                _error.value = result.reason ?: "Invalid URL"
+            val validation = UrlValidator.validate(rawUrl)
+            if (!validation.isValid) {
+                _error.value = validation.reason ?: "Invalid URL"
                 return@launch
             }
             _error.value = null
-            try {
-                repo.enqueue(result.normalizedUrl!!, result.suggestedFileName ?: "audio")
-            } catch (e: Exception) {
+            val result = repo.enqueue(validation.normalizedUrl!!, validation.suggestedFileName)
+            result.onFailure { e ->
                 _error.value = e.message ?: "Failed to start download"
             }
         }
