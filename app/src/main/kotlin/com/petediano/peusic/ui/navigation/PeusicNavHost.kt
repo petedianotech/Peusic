@@ -17,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -28,6 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import com.petediano.peusic.ui.screens.discover.DiscoverScreen
 import com.petediano.peusic.ui.screens.downloads.DownloadsScreen
 import com.petediano.peusic.ui.screens.music.MusicScreen
+import com.petediano.peusic.ui.screens.player.MiniPlayer
 import com.petediano.peusic.ui.screens.player.NowPlayingScreen
 import com.petediano.peusic.ui.screens.settings.SettingsScreen
 import com.petediano.peusic.ui.screens.splash.SplashScreen
@@ -52,6 +54,7 @@ fun PeusicNavHost() {
     val showBottomBar = bottomDestinations.any { dest ->
         currentDestination?.hierarchy?.any { it.route == dest.route } == true
     }
+    val showMiniPlayer = showBottomBar
 
     Scaffold(
         bottomBar = {
@@ -83,10 +86,15 @@ fun PeusicNavHost() {
             }
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
             NavHost(
                 navController = navController,
-                startDestination = Screen.Splash.route
+                startDestination = Screen.Splash.route,
+                modifier = Modifier.fillMaxSize()
             ) {
                 composable(Screen.Splash.route) {
                     SplashScreen(onFinished = {
@@ -106,6 +114,13 @@ fun PeusicNavHost() {
                 composable(Screen.NowPlaying.route) {
                     NowPlayingScreen(onBack = { navController.popBackStack() })
                 }
+            }
+
+            if (showMiniPlayer) {
+                MiniPlayer(
+                    onOpenNowPlaying = { navController.navigate(Screen.NowPlaying.route) },
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
             }
         }
     }
