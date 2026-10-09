@@ -7,11 +7,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.petediano.peusic.ui.navigation.PeusicNavHost
 import com.petediano.peusic.ui.theme.PeusicTheme
-import com.petediano.peusic.ui.theme.PeusicThemeMode
+import com.petediano.peusic.ui.viewmodel.SettingsViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,9 +28,11 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun PeusicAppRoot() {
-    // Theme mode will later be driven by DataStore preference.
-    PeusicTheme(themeMode = PeusicThemeMode.SYSTEM) {
+fun PeusicAppRoot(
+    settingsViewModel: SettingsViewModel = viewModel()
+) {
+    val themeMode by settingsViewModel.themeMode.collectAsState()
+    PeusicTheme(themeMode = themeMode) {
         Surface(modifier = Modifier.fillMaxSize()) {
             PeusicNavHost()
         }
