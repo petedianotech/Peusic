@@ -9,7 +9,7 @@ class UrlValidatorTest {
 
     @Test
     fun acceptsDirectHttpsMp3() {
-        val r = UrlValidator.validate("https://example.com/music/track.mp3")
+        val r = UrlValidator.validate("https://cdn.example.com/files/track.mp3")
         assertTrue(r.isValid)
         assertTrue(r.normalizedUrl!!.startsWith("https://"))
     }
