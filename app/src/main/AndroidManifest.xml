@@ -2,9 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Phase 1: minimal permissions. Later phases add media and storage as needed. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28"
+        tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 
     <application
         android:name=".PeusicApp"
@@ -17,6 +20,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Peusic"
         tools:targetApi="35">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
