@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Peusic</string>
+    <string name="nav_discover">Discover</string>
+    <string name="nav_downloads">Downloads</string>
+    <string name="nav_music">Music</string>
+    <string name="nav_settings">Settings</string>
+</resources>
