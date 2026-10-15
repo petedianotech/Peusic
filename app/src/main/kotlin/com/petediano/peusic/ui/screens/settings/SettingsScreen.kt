@@ -13,7 +13,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -35,26 +37,45 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 100.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item { Text("Settings", style = MaterialTheme.typography.headlineMedium) }
+        item {
+            Text(
+                "Settings",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
 
         item {
-            Text("Appearance", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-            Card(shape = CardShape, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-                Column(modifier = Modifier.padding(8.dp)) {
+            SectionLabel("Appearance")
+            Card(
+                shape = CardShape,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            ) {
+                Column(modifier = Modifier.padding(vertical = 4.dp)) {
                     listOf(
-                        PeusicThemeMode.SYSTEM to "System",
+                        PeusicThemeMode.SYSTEM to "System default",
                         PeusicThemeMode.LIGHT to "Light",
-                        PeusicThemeMode.DARK to "Dark blue"
+                        PeusicThemeMode.DARK to "Dark (Sonic Aurora)"
                     ).forEach { (mode, label) ->
                         Row(
-                            modifier = Modifier.fillMaxWidth().clickable { viewModel.setThemeMode(mode) }.padding(8.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { viewModel.setThemeMode(mode) }
+                                .padding(horizontal = 12.dp, vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            RadioButton(selected = themeMode == mode, onClick = { viewModel.setThemeMode(mode) })
-                            Text(label)
+                            RadioButton(
+                                selected = themeMode == mode,
+                                onClick = { viewModel.setThemeMode(mode) },
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = MaterialTheme.colorScheme.primary
+                                )
+                            )
+                            Text(label, style = MaterialTheme.typography.bodyLarge)
                         }
                     }
                 }
@@ -62,40 +83,67 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
         }
 
         item {
-            Text("Playback", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-            SwitchRow("Gapless playback", "Where supported", gapless, viewModel::setGapless)
-            SwitchRow("Resume on start", "Continue last track when possible", resumeOnStart, viewModel::setResumeOnStart)
-            SwitchRow("Skip silence", "Experimental", skipSilence, viewModel::setSkipSilence)
+            SectionLabel("Playback")
+            SwitchRow("Gapless playback", "Seamless track transitions where supported", gapless, viewModel::setGapless)
+            SwitchRow("Resume on start", "Continue the last track when possible", resumeOnStart, viewModel::setResumeOnStart)
+            SwitchRow("Skip silence", "Experimental — skip silent sections", skipSilence, viewModel::setSkipSilence)
         }
 
         item {
-            Text("Privacy", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-            InfoCard("No accounts, no tracking",
-                "Peusic does not include advertising or analytics SDKs. Network is used only for user-initiated authorised downloads.")
+            SectionLabel("Privacy")
+            InfoCard("No accounts, no tracking", "Peusic does not include advertising or analytics SDKs. Network is used only for user-initiated authorised downloads.")
             InfoCard("Local first", "Your library and playback stay on the device.")
         }
 
         item {
-            Text("About", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+            SectionLabel("About")
             InfoCard("Version", viewModel.appVersion)
-            InfoCard("Open-source notices", "Media3, OkHttp, WorkManager, Room, Compose")
+            InfoCard("Libraries", "Media3 · OkHttp · WorkManager · Room · Coil · Compose")
         }
     }
 }
 
 @Composable
+private fun SectionLabel(text: String) {
+    Text(
+        text,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(bottom = 4.dp)
+    )
+}
+
+@Composable
 private fun SwitchRow(title: String, subtitle: String, checked: Boolean, onChange: (Boolean) -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 3.dp),
         shape = CardShape,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleSmall)
-                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
-            Switch(checked = checked, onCheckedChange = onChange)
+            Switch(
+                checked = checked,
+                onCheckedChange = onChange,
+                colors = SwitchDefaults.colors(
+                    checkedTrackColor = MaterialTheme.colorScheme.primary
+                )
+            )
         }
     }
 }
@@ -103,13 +151,21 @@ private fun SwitchRow(title: String, subtitle: String, checked: Boolean, onChang
 @Composable
 private fun InfoCard(title: String, body: String) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 3.dp),
         shape = CardShape,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(title, style = MaterialTheme.typography.titleSmall)
-            Text(body, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                body,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp)
+            )
         }
     }
 }
