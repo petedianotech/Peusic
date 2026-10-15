@@ -6,7 +6,7 @@ Sonic Aurora visual identity · No ads · No tracking · No accounts · No cloud
 
 Inspired by **Musicolet** (efficient navigation, folders, queues), **Poweramp** (solid playback controls), and **OtoMusic** (clean library + Now Playing).
 
-## Status v1.4.0 — UI/UX Overhaul (Phase A)
+## Status v1.5.0 — UI/UX Phase A + B complete
 
 ### Playing music ✅
 | Feature | Status |
@@ -24,7 +24,7 @@ Inspired by **Musicolet** (efficient navigation, folders, queues), **Poweramp** 
 | Mini-player + MediaSession background | ✅ |
 | Gapless (Media3) | ✅ |
 
-### UI / Visual (v1.4.0) ✅
+### UI / Visual ✅
 | Feature | Status |
 |---------|--------|
 | Large album art on Now Playing | ✅ |
@@ -33,16 +33,20 @@ Inspired by **Musicolet** (efficient navigation, folders, queues), **Poweramp** 
 | FilterChips for speed + sleep | ✅ |
 | Rich track rows + overflow menu | ✅ |
 | Polished MiniPlayer with art + icon controls | ✅ |
+| Refined bottom navigation (Explore / Download / Library / Settings) | ✅ |
+| Empty states (Music, Downloads, Playlists) | ✅ |
+| Discover home with tip cards | ✅ |
+| Settings grouped cards + clearer labels | ✅ |
 | Graceful fallback when art/metadata missing | ✅ |
 | Coil image loading | ✅ |
 
-### Next (Phase B/C)
+### Next (optional)
 - Multiple independent queues
 - Embedded + LRC lyrics UI
 - 10-band EQ + ReplayGain
 - Tag editor + M3U import/export
 - Hierarchical folders, widgets, Android Auto
-- Micro-interactions & empty states polish
+- Micro-interactions & haptics (Phase C)
 
 See **FEATURES.md** for the complete roadmap.
 
