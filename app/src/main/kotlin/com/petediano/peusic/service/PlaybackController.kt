@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-/** Thin MediaController wrapper — Phase 1: queue, speed, gapless Media3 */
+/** Thin MediaController wrapper — queue, speed, gapless, artwork */
 class PlaybackController(private val context: Context) {
 
     private var controller: MediaController? = null
@@ -30,6 +30,9 @@ class PlaybackController(private val context: Context) {
 
     private val _currentArtist = MutableStateFlow<String?>(null)
     val currentArtist: StateFlow<String?> = _currentArtist.asStateFlow()
+
+    private val _currentArtworkUri = MutableStateFlow<String?>(null)
+    val currentArtworkUri: StateFlow<String?> = _currentArtworkUri.asStateFlow()
 
     private val _positionMs = MutableStateFlow(0L)
     val positionMs: StateFlow<Long> = _positionMs.asStateFlow()
@@ -74,6 +77,7 @@ class PlaybackController(private val context: Context) {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             _currentTitle.value = mediaItem?.mediaMetadata?.title?.toString()
             _currentArtist.value = mediaItem?.mediaMetadata?.artist?.toString()
+            _currentArtworkUri.value = mediaItem?.mediaMetadata?.artworkUri?.toString()
             val c = controller
             _hasMedia.value = (c?.mediaItemCount ?: 0) > 0
             _queueSize.value = c?.mediaItemCount ?: 0
@@ -111,6 +115,7 @@ class PlaybackController(private val context: Context) {
                 _isPlaying.value = c.isPlaying
                 _currentTitle.value = c.mediaMetadata.title?.toString()
                 _currentArtist.value = c.mediaMetadata.artist?.toString()
+                _currentArtworkUri.value = c.mediaMetadata.artworkUri?.toString()
                 _shuffle.value = c.shuffleModeEnabled
                 _repeatMode.value = c.repeatMode
                 _hasMedia.value = c.mediaItemCount > 0
@@ -133,22 +138,23 @@ class PlaybackController(private val context: Context) {
         _hasMedia.value = false
     }
 
+    private fun trackToMediaItem(track: Track): MediaItem {
+        val metaBuilder = MediaMetadata.Builder()
+            .setTitle(track.title)
+            .setArtist(track.displayArtist)
+            .setAlbumTitle(track.displayAlbum)
+        track.albumArtUri?.let { metaBuilder.setArtworkUri(it) }
+        return MediaItem.Builder()
+            .setUri(track.contentUri)
+            .setMediaId(track.id.toString())
+            .setMediaMetadata(metaBuilder.build())
+            .build()
+    }
+
     fun playTracks(tracks: List<Track>, startIndex: Int = 0) {
         val c = controller ?: return
         if (tracks.isEmpty()) return
-        val items = tracks.map { track ->
-            MediaItem.Builder()
-                .setUri(track.contentUri)
-                .setMediaId(track.id.toString())
-                .setMediaMetadata(
-                    MediaMetadata.Builder()
-                        .setTitle(track.title)
-                        .setArtist(track.displayArtist)
-                        .setAlbumTitle(track.displayAlbum)
-                        .build()
-                )
-                .build()
-        }
+        val items = tracks.map { trackToMediaItem(it) }
         c.setMediaItems(items, startIndex.coerceIn(0, items.lastIndex), 0L)
         c.prepare()
         c.play()
@@ -159,17 +165,7 @@ class PlaybackController(private val context: Context) {
 
     fun playNext(track: Track) {
         val c = controller ?: return
-        val item = MediaItem.Builder()
-            .setUri(track.contentUri)
-            .setMediaId(track.id.toString())
-            .setMediaMetadata(
-                MediaMetadata.Builder()
-                    .setTitle(track.title)
-                    .setArtist(track.displayArtist)
-                    .setAlbumTitle(track.displayAlbum)
-                    .build()
-            )
-            .build()
+        val item = trackToMediaItem(track)
         val insertIndex = (c.currentMediaItemIndex + 1).coerceAtMost(c.mediaItemCount)
         c.addMediaItem(insertIndex, item)
         _queueSize.value = c.mediaItemCount
@@ -184,6 +180,7 @@ class PlaybackController(private val context: Context) {
         _currentIndex.value = 0
         _currentTitle.value = null
         _currentArtist.value = null
+        _currentArtworkUri.value = null
     }
 
     fun playPause() {
