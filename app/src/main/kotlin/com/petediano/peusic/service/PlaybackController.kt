@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+/** Thin MediaController wrapper — Phase 1: queue, speed, gapless Media3 */
 class PlaybackController(private val context: Context) {
 
     private var controller: MediaController? = null
@@ -51,6 +52,9 @@ class PlaybackController(private val context: Context) {
     private val _currentIndex = MutableStateFlow(0)
     val currentIndex: StateFlow<Int> = _currentIndex.asStateFlow()
 
+    private val _playbackSpeed = MutableStateFlow(1.0f)
+    val playbackSpeed: StateFlow<Float> = _playbackSpeed.asStateFlow()
+
     private val mainHandler = Handler(Looper.getMainLooper())
     private val positionTicker = object : Runnable {
         override fun run() {
@@ -67,7 +71,6 @@ class PlaybackController(private val context: Context) {
                 mainHandler.post(positionTicker)
             }
         }
-
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             _currentTitle.value = mediaItem?.mediaMetadata?.title?.toString()
             _currentArtist.value = mediaItem?.mediaMetadata?.artist?.toString()
@@ -77,7 +80,6 @@ class PlaybackController(private val context: Context) {
             _currentIndex.value = c?.currentMediaItemIndex?.coerceAtLeast(0) ?: 0
             updatePosition()
         }
-
         override fun onPlaybackStateChanged(playbackState: Int) {
             updatePosition()
             val c = controller
@@ -85,13 +87,14 @@ class PlaybackController(private val context: Context) {
             _queueSize.value = c?.mediaItemCount ?: 0
             _currentIndex.value = c?.currentMediaItemIndex?.coerceAtLeast(0) ?: 0
         }
-
         override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
             _shuffle.value = shuffleModeEnabled
         }
-
         override fun onRepeatModeChanged(repeatMode: Int) {
             _repeatMode.value = repeatMode
+        }
+        override fun onPlaybackParametersChanged(playbackParameters: androidx.media3.common.PlaybackParameters) {
+            _playbackSpeed.value = playbackParameters.speed
         }
     }
 
@@ -113,6 +116,7 @@ class PlaybackController(private val context: Context) {
                 _hasMedia.value = c.mediaItemCount > 0
                 _queueSize.value = c.mediaItemCount
                 _currentIndex.value = c.currentMediaItemIndex.coerceAtLeast(0)
+                _playbackSpeed.value = c.playbackParameters.speed
                 updatePosition()
             } catch (_: Exception) {
                 _isConnected.value = false
@@ -153,6 +157,35 @@ class PlaybackController(private val context: Context) {
         _currentIndex.value = startIndex.coerceIn(0, items.lastIndex)
     }
 
+    fun playNext(track: Track) {
+        val c = controller ?: return
+        val item = MediaItem.Builder()
+            .setUri(track.contentUri)
+            .setMediaId(track.id.toString())
+            .setMediaMetadata(
+                MediaMetadata.Builder()
+                    .setTitle(track.title)
+                    .setArtist(track.displayArtist)
+                    .setAlbumTitle(track.displayAlbum)
+                    .build()
+            )
+            .build()
+        val insertIndex = (c.currentMediaItemIndex + 1).coerceAtMost(c.mediaItemCount)
+        c.addMediaItem(insertIndex, item)
+        _queueSize.value = c.mediaItemCount
+        _hasMedia.value = true
+    }
+
+    fun clearQueue() {
+        val c = controller ?: return
+        c.clearMediaItems()
+        _hasMedia.value = false
+        _queueSize.value = 0
+        _currentIndex.value = 0
+        _currentTitle.value = null
+        _currentArtist.value = null
+    }
+
     fun playPause() {
         val c = controller ?: return
         if (c.isPlaying) c.pause() else c.play()
@@ -178,6 +211,12 @@ class PlaybackController(private val context: Context) {
             Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
             else -> Player.REPEAT_MODE_OFF
         }
+    }
+
+    fun setPlaybackSpeed(speed: Float) {
+        val s = speed.coerceIn(0.5f, 2.0f)
+        controller?.setPlaybackSpeed(s)
+        _playbackSpeed.value = s
     }
 
     fun updatePosition() {
