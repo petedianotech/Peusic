@@ -1,5 +1,6 @@
 package com.petediano.peusic.domain.model
 
+import android.content.ContentUris
 import android.net.Uri
 
 data class Track(
@@ -17,8 +18,8 @@ data class Track(
     val dateAdded: Long = 0L,
     val folderPath: String? = null
 ) {
-    val displayArtist: String get() = artist?.takeIf { it.isNotBlank() } ?: "Unknown Artist"
-    val displayAlbum: String get() = album?.takeIf { it.isNotBlank() } ?: "Unknown Album"
+    val displayArtist: String get() = artist?.takeIf { it.isNotBlank() && it != "<unknown>" } ?: "Unknown Artist"
+    val displayAlbum: String get() = album?.takeIf { it.isNotBlank() && it != "<unknown>" } ?: "Unknown Album"
     val durationFormatted: String
         get() {
             if (durationMs <= 0) return "--:--"
@@ -26,6 +27,17 @@ data class Track(
             val m = totalSec / 60
             val s = totalSec % 60
             return "%d:%02d".format(m, s)
+        }
+
+    /** MediaStore album art URI (may be null or missing on device). */
+    val albumArtUri: Uri?
+        get() {
+            val id = albumId ?: return null
+            if (id <= 0L) return null
+            return ContentUris.withAppendedId(
+                Uri.parse("content://media/external/audio/albumart"),
+                id
+            )
         }
 }
 
