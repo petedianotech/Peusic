@@ -1,68 +1,52 @@
 # Peusic
 
-**Peusic** — production-ready offline-first personal music player for Android.
+**Peusic** — production offline-first personal music player for Android.
 
 Sonic Aurora visual identity · No ads · No tracking · No accounts · No cloud sync.
 
-## Features (v1.1.1)
+Inspired by **Musicolet** (efficient navigation, folders, queues), **Poweramp** (solid playback controls), and **OtoMusic** (clean library + Now Playing).
 
-| Area | Status |
-|------|--------|
-| Sonic Aurora theme (System / Light / Dark blue) | ✅ |
-| Navigation (Discover, Downloads, Music, Settings) + Splash | ✅ |
-| Mini-player + full Now Playing (seek, prev/next, shuffle, repeat) | ✅ |
-| Authorised direct-URL audio downloader (OkHttp + WorkManager + Room) | ✅ |
-| Strict URL validation (blocks YouTube / Spotify / DRM hosts) | ✅ |
-| Local library via MediaStore (scoped storage) | ✅ |
-| Background playback (Media3 ExoPlayer + MediaSessionService) | ✅ |
-| System media controls, notification, lock-screen, Bluetooth | ✅ |
-| Queue play from library | ✅ |
-| DataStore preferences (theme, gapless, resume, skip-silence) | ✅ |
-| Unit tests (URL validator) | ✅ |
-| Debug APK artifact via GitHub Actions | ✅ |
+## Phase 1 status (v1.2.0) — Playing music first
+
+| Feature | Status |
+|---------|--------|
+| Library tabs: Songs / Albums / Artists / Folders / Playlists | ✅ |
+| Search (title, artist, album) | ✅ |
+| Play from list / album / artist / folder | ✅ |
+| Play Next from track row | ✅ |
+| Queue size + Track X of Y | ✅ |
+| Shuffle / Repeat off-one-all | ✅ |
+| Seek, prev/next, play/pause | ✅ |
+| Playback speed 0.75x–1.5x | ✅ |
+| Sleep timer 15 / 30 min | ✅ |
+| Clear queue | ✅ |
+| Mini-player + MediaSession background | ✅ |
+| Authorised direct-URL downloader | ✅ |
+| Theme + DataStore prefs | ✅ |
+| Gapless (Media3) | ✅ |
+
+See **FEATURES.md** for the full Poweramp + Musicolet + OtoMusic feature matrix and Phase 2 plan.
 
 ## Architecture
 
-- **UI**: Jetpack Compose + Material 3 + Navigation
-- **Playback**: Media3 1.5.1 (ExoPlayer + MediaSessionService)
-- **Library**: MediaStore queries (READ_MEDIA_AUDIO)
-- **Downloads**: OkHttp + WorkManager + Room
-- **Settings**: DataStore Preferences
-- **Packages**: `ui/`, `domain/`, `data/`, `service/`
-
-## Requirements
-
-- minSdk 26 · target / compile SDK 35 · JDK 17+
+- Kotlin + Jetpack Compose + Material 3
+- Media3 ExoPlayer + MediaSessionService
+- MediaStore library (READ_MEDIA_AUDIO)
+- OkHttp + WorkManager + Room (downloads)
+- DataStore preferences
 
 ## Build
 
 ```bash
 ./gradlew assembleDebug
-./gradlew test
 ```
 
-Debug APK lands in `app/build/outputs/apk/debug/`.
-
-GitHub Actions builds on every push to `main` and uploads the **peusic-debug-apk** artifact (retention 30 days).
+GitHub Actions uploads **peusic-debug-apk** on every successful push to `main`.
 
 ## Privacy
 
-Peusic ships with zero advertising or analytics SDKs.  
-Network access is used exclusively for user-initiated authorised downloads.  
-Library scanning and playback are 100 % on-device.
-
-## Legal downloads
-
-Only paste direct HTTPS/HTTP links to audio files you are authorised to download.  
-YouTube, Spotify, SoundCloud, Apple Music and any DRM-protected sources are rejected by the URL validator.
-
-## Known limitations (real-device testing recommended)
-
-- Artwork loading / bounded disk cache (placeholder used today)
-- Full queue reordering UI
-- Playback speed / sleep-timer polish
-- Large-library performance tuning on low-end devices
+No advertising or analytics SDKs. Network only for user-initiated authorised downloads.
 
 ## Licence
 
-Currently private. Dependency licences (Media3, OkHttp, WorkManager, Room, Compose) apply as usual.
+Currently private. Dependency licences apply as usual.
