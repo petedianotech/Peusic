@@ -1,6 +1,7 @@
 package com.petediano.peusic.ui.screens.player
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.filled.QueueMusic
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Repeat
@@ -27,7 +28,6 @@ import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -44,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -344,19 +343,15 @@ fun NowPlayingScreen(
 
         Spacer(Modifier.height(8.dp))
 
-        // Clear queue (subtle)
+        // Clear queue
         Text(
             text = "Clear queue",
             style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
+            color = MaterialTheme.colorScheme.error.copy(alpha = 0.85f),
             modifier = Modifier
-                .padding(8.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color.Transparent)
-                .padding(horizontal = 12.dp, vertical = 6.dp)
-                .let { mod ->
-                    androidx.compose.foundation.clickable(onClick = { playerViewModel.clearQueue() }).then(mod)
-                }
+                .clickable { playerViewModel.clearQueue() }
+                .padding(horizontal = 16.dp, vertical = 10.dp)
         )
     }
 }
