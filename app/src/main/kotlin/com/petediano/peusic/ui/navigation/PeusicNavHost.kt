@@ -4,9 +4,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -36,12 +37,12 @@ import com.petediano.peusic.ui.screens.splash.SplashScreen
 import com.petediano.peusic.ui.theme.AuroraBlue
 
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
-    data object Splash : Screen("splash", "", Icons.Filled.Home)
-    data object Discover : Screen("discover", "Discover", Icons.Filled.Home)
-    data object Downloads : Screen("downloads", "Downloads", Icons.Filled.List)
-    data object Music : Screen("music", "Music", Icons.Filled.PlayArrow)
+    data object Splash : Screen("splash", "", Icons.Filled.Explore)
+    data object Discover : Screen("discover", "Discover", Icons.Filled.Explore)
+    data object Downloads : Screen("downloads", "Downloads", Icons.Filled.Download)
+    data object Music : Screen("music", "Music", Icons.Filled.LibraryMusic)
     data object Settings : Screen("settings", "Settings", Icons.Filled.Settings)
-    data object NowPlaying : Screen("now_playing", "Now Playing", Icons.Filled.PlayArrow)
+    data object NowPlaying : Screen("now_playing", "Now Playing", Icons.Filled.LibraryMusic)
 }
 
 private val bottomDestinations = listOf(Screen.Discover, Screen.Downloads, Screen.Music, Screen.Settings)
@@ -59,12 +60,15 @@ fun PeusicNavHost() {
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
-                NavigationBar {
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 3.dp
+                ) {
                     bottomDestinations.forEach { screen ->
                         val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
                         NavigationBarItem(
                             icon = { Icon(screen.icon, contentDescription = screen.label) },
-                            label = { Text(screen.label) },
+                            label = { Text(screen.label, style = MaterialTheme.typography.labelMedium) },
                             selected = selected,
                             onClick = {
                                 navController.navigate(screen.route) {
@@ -76,7 +80,7 @@ fun PeusicNavHost() {
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = AuroraBlue,
                                 selectedTextColor = AuroraBlue,
-                                indicatorColor = AuroraBlue.copy(alpha = 0.15f),
+                                indicatorColor = AuroraBlue.copy(alpha = 0.16f),
                                 unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                                 unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -98,7 +102,7 @@ fun PeusicNavHost() {
             ) {
                 composable(Screen.Splash.route) {
                     SplashScreen(onFinished = {
-                        navController.navigate(Screen.Discover.route) {
+                        navController.navigate(Screen.Music.route) {
                             popUpTo(Screen.Splash.route) { inclusive = true }
                         }
                     })
@@ -119,7 +123,9 @@ fun PeusicNavHost() {
             if (showMiniPlayer) {
                 MiniPlayer(
                     onOpenNowPlaying = { navController.navigate(Screen.NowPlaying.route) },
-                    modifier = Modifier.align(Alignment.BottomCenter)
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(horizontal = 8.dp, vertical = 6.dp)
                 )
             }
         }
