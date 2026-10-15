@@ -4,7 +4,6 @@ import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +25,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -50,15 +52,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.petediano.peusic.domain.model.Album
-import com.petediano.peusic.domain.model.Artist
-import com.petediano.peusic.domain.model.Folder
 import com.petediano.peusic.domain.model.Track
+import com.petediano.peusic.ui.theme.CardShape
 import com.petediano.peusic.ui.viewmodel.LibraryTab
 import com.petediano.peusic.ui.viewmodel.MusicViewModel
 import com.petediano.peusic.ui.viewmodel.PlayerViewModel
@@ -182,71 +183,138 @@ fun MusicScreen(
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 100.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             when (tab) {
                 LibraryTab.Songs -> {
                     if (tracks.isEmpty()) {
                         item {
-                            Text(
-                                "No tracks. Grant permission and Scan.",
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(16.dp)
+                            EmptyState(
+                                title = if (query.isBlank()) "No music found" else "No results",
+                                body = if (query.isBlank())
+                                    "Grant audio permission and tap Scan to load tracks from your device."
+                                else
+                                    "Try a different search term.",
+                                actionLabel = if (query.isBlank()) "Scan library" else null,
+                                onAction = if (query.isBlank()) ({ musicViewModel.loadLibrary() }) else null
+                            )
+                        }
+                    } else {
+                        itemsIndexed(tracks, key = { _, t -> t.id }) { index, track ->
+                            TrackRow(
+                                track = track,
+                                onPlay = {
+                                    playerViewModel.playTracks(tracks, index)
+                                    onOpenNowPlaying()
+                                },
+                                onPlayNext = { playerViewModel.playNext(track) }
                             )
                         }
                     }
-                    itemsIndexed(tracks, key = { _, t -> t.id }) { index, track ->
-                        TrackRow(
-                            track = track,
-                            onPlay = {
-                                playerViewModel.playTracks(tracks, index)
-                                onOpenNowPlaying()
-                            },
-                            onPlayNext = { playerViewModel.playNext(track) }
-                        )
-                    }
                 }
                 LibraryTab.Albums -> {
-                    items(albums, key = { it.id to it.title }) { album ->
-                        SimpleRow(album.title, "${album.artist ?: "Unknown"} · ${album.trackCount} tracks") {
-                            val list = musicViewModel.tracksForAlbum(album)
-                            if (list.isNotEmpty()) {
-                                playerViewModel.playTracks(list, 0)
-                                onOpenNowPlaying()
+                    if (albums.isEmpty()) {
+                        item { EmptyState("No albums", "Scan your library to see albums here.") }
+                    } else {
+                        items(albums, key = { it.id to it.title }) { album ->
+                            SimpleRow(album.title, "${album.artist ?: "Unknown"} · ${album.trackCount} tracks") {
+                                val list = musicViewModel.tracksForAlbum(album)
+                                if (list.isNotEmpty()) {
+                                    playerViewModel.playTracks(list, 0)
+                                    onOpenNowPlaying()
+                                }
                             }
                         }
                     }
                 }
                 LibraryTab.Artists -> {
-                    items(artists, key = { it.name }) { artist ->
-                        SimpleRow(artist.name, "${artist.trackCount} tracks · ${artist.albumCount} albums") {
-                            val list = musicViewModel.tracksForArtist(artist)
-                            if (list.isNotEmpty()) {
-                                playerViewModel.playTracks(list, 0)
-                                onOpenNowPlaying()
+                    if (artists.isEmpty()) {
+                        item { EmptyState("No artists", "Scan your library to see artists here.") }
+                    } else {
+                        items(artists, key = { it.name }) { artist ->
+                            SimpleRow(artist.name, "${artist.trackCount} tracks · ${artist.albumCount} albums") {
+                                val list = musicViewModel.tracksForArtist(artist)
+                                if (list.isNotEmpty()) {
+                                    playerViewModel.playTracks(list, 0)
+                                    onOpenNowPlaying()
+                                }
                             }
                         }
                     }
                 }
                 LibraryTab.Folders -> {
-                    items(folders, key = { it.path }) { folder ->
-                        SimpleRow(folder.name, "${folder.trackCount} tracks") {
-                            val list = musicViewModel.tracksForFolder(folder)
-                            if (list.isNotEmpty()) {
-                                playerViewModel.playTracks(list, 0)
-                                onOpenNowPlaying()
+                    if (folders.isEmpty()) {
+                        item { EmptyState("No folders", "Scan your library to see folders here.") }
+                    } else {
+                        items(folders, key = { it.path }) { folder ->
+                            SimpleRow(folder.name, "${folder.trackCount} tracks") {
+                                val list = musicViewModel.tracksForFolder(folder)
+                                if (list.isNotEmpty()) {
+                                    playerViewModel.playTracks(list, 0)
+                                    onOpenNowPlaying()
+                                }
                             }
                         }
                     }
                 }
                 LibraryTab.Playlists -> {
                     item {
-                        Text(
-                            "Playlists: M3U import/export coming soon.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(16.dp)
+                        EmptyState(
+                            title = "Playlists coming soon",
+                            body = "M3U import/export and custom playlists are planned for a future update."
                         )
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyState(
+    title: String,
+    body: String,
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 24.dp, horizontal = 8.dp),
+        shape = CardShape,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                Icons.Filled.MusicNote,
+                contentDescription = null,
+                modifier = Modifier.size(44.dp),
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
+            )
+            Spacer(Modifier.height(14.dp))
+            Text(
+                title,
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                body,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 6.dp)
+            )
+            if (actionLabel != null && onAction != null) {
+                Spacer(Modifier.height(16.dp))
+                Button(onClick = onAction, shape = RoundedCornerShape(12.dp)) {
+                    Text(actionLabel)
                 }
             }
         }
@@ -269,7 +337,6 @@ private fun TrackRow(
             .padding(vertical = 6.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Album art thumbnail
         Surface(
             modifier = Modifier.size(52.dp),
             shape = RoundedCornerShape(8.dp),
