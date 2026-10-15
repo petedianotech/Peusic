@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * Shared player state — Phase 1: queue, speed, sleep timer.
+ * Shared player state — queue, speed, sleep timer, artwork.
  */
 class PlayerViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -23,6 +23,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     val isPlaying: StateFlow<Boolean> = controller.isPlaying
     val currentTitle: StateFlow<String?> = controller.currentTitle
     val currentArtist: StateFlow<String?> = controller.currentArtist
+    val currentArtworkUri: StateFlow<String?> = controller.currentArtworkUri
     val positionMs: StateFlow<Long> = controller.positionMs
     val durationMs: StateFlow<Long> = controller.durationMs
     val shuffle: StateFlow<Boolean> = controller.shuffle
